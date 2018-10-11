@@ -245,6 +245,7 @@ public:
     return this;
   }
 
+  bool equals(const Value* other) const;
 };
 
 struct Node : public Attributes<Node> {
@@ -821,7 +822,16 @@ struct Block {
   // value_map is used whenever a node in src references a free variable
   // in src to look up its corresponding value
   TORCH_API void cloneFrom(Block * src, std::function<Value*(Value*)> value_map);
-private:
+
+  // Determine whether two blocks are structurally equivalent. This means:
+  //   1. The blocks' input and output values are the same.
+  //   2. All nodes have the same input and output values.
+  //   3. All nodes are in the same order.
+  bool equals(
+      const Block* other,
+      std::unordered_map<const Value*, const Value*>& selfToOther) const;
+
+ private:
   // should only be called in the constructor
   Node* initOutput(Node* p) {
     p->next() = p;
